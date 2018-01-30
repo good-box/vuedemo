@@ -2,7 +2,7 @@
 	<div class="goods">
 		<div class="menu-wrapper"  ref="menu-wrap">
       <ul>
-        <li class="menu-item" v-for="(item,index) in goods" :class="{current:currentIndex===index}">
+        <li class="menu-item" v-for="(item,index) in goods" :class="{current:currentIndex===index}" @click="selectMenu(index,$event)">
           <span class="text border-1px">
             <span v-show="item.type>0" class="icon" :class="classMap[item.type]"></span>
             {{item.name}}
@@ -36,11 +36,13 @@
         </li>
       </ul>
     </div>
+    <shopcart :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice"></shopcart>
 	</div>
 </template>
 
 <script type="text/ecmascript-6">
   import BScroll from 'better-scroll';
+  import shopcart from 'components/shopcart/shopcart';
   const ERR_OK = 0;
 	export default{
     props:{
@@ -50,9 +52,14 @@
     },
     data(){
       return {
-        goods:[],
-        listHeight:[],
-        srollY:0
+        // goods:[],
+        // listHeight:[],
+        // srollY:0
+        goods: [],
+        classMap: [],
+        listHeight: [],
+        scrollY: 0,
+        selectedFood: {}
       };
     },
     created(){
@@ -70,8 +77,19 @@
       this.classMap = ['decrease', 'discount', 'special', 'invoice', 'guarantee'];
     },
     methods:{
+      selectMenu(index,event){
+        if(!event._constructed){
+          return;
+        }
+        let foodList = this.$refs['food-wrap'].getElementsByClassName('food-list-hook');
+        let el = foodList[index];
+        this.foodsScroll.scrollToElement(el,300);
+        // console.log(index);
+      },
       _initScroll(){
-        this.menuScroll = new BScroll(this.$refs['menu-wrap'],{});
+        this.menuScroll = new BScroll(this.$refs['menu-wrap'],{
+          click:true
+        });
         this.foodsScroll = new BScroll(this.$refs['food-wrap'],{
           probeType:3
         });
@@ -95,12 +113,16 @@
         for(let i=0;i < this.listHeight.length;i++){
           let height1 = this.listHeight[i];
           let height2 = this.listHeight[i+1];
-          if(!height2 || (this.scrollY > height1 && this.scrollY < height2)){
+          if(!height2 || (this.scrollY >= height1 && this.scrollY < height2)){
             return i;              
           }
         }
         return 0;
       }
+      
+    },
+    components:{
+      shopcart
     }
   };
 </script>
